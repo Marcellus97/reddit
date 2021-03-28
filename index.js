@@ -41,7 +41,8 @@ class Reddit {
 
   async _sendRequest (method, url, data) {
     const token = await this._getToken()
-    const body = await this._makeRequest(method, url, data, token)
+    const result = await this._makeRequest(method, url, data, token)
+    const body = result.body
 
     const errors = body && body.json && body.json.errors
     if (errors && errors.length > 0) {
@@ -55,7 +56,7 @@ class Reddit {
       throw err
     }
 
-    return body
+    return {headers: headers, body: body}
   }
 
   async _getToken () {
@@ -153,7 +154,7 @@ class Reddit {
         const statusType = Math.floor(res.statusCode / 100)
 
         if (statusType === 2) {
-          return resolve(body)
+          return resolve({headers: res.headers, body: body})
         } else {
           return reject(
             new Error(`API error: ${body.message}. Status code: ${res.statusCode}`)
